@@ -33,7 +33,7 @@ const App = () => {
   return (
     <SafeAreaView style={styles.container}>
       <WebView
-        source={{ uri: 'https://smbb.in/site/login' }}
+        source={{ uri: 'https://bluebellschool.org.in/site/login' }}
         style={styles.webview}
       />
     </SafeAreaView>
