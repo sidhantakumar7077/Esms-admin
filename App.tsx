@@ -1,23 +1,30 @@
-import { StyleSheet, Text, View, SafeAreaView, PermissionsAndroid, Platform } from 'react-native'
-import React, { useEffect } from 'react'
-import { WebView } from 'react-native-webview'
+import {
+  StyleSheet,
+  SafeAreaView,
+  PermissionsAndroid,
+  Platform,
+  Alert,
+  Linking,
+} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 const App = () => {
+  const webViewRef = useRef(null);
 
-  const requestCameraPermission = async () => {
+  const requestPermissions = async () => {
     if (Platform.OS === 'android') {
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera Permission',
-            message: 'This app needs access to your camera to scan QR codes.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
+        const cameraGranted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA
         );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
+        const storageGranted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        );
+        return (
+          cameraGranted === PermissionsAndroid.RESULTS.GRANTED &&
+          storageGranted === PermissionsAndroid.RESULTS.GRANTED
+        );
       } catch (err) {
         console.warn(err);
         return false;
@@ -27,20 +34,58 @@ const App = () => {
   };
 
   useEffect(() => {
-    requestCameraPermission();
+    requestPermissions();
   }, []);
+
+  const injectedJS = `
+    window.print = function() {
+      window.ReactNativeWebView.postMessage("PRINT_TRIGGERED");
+    };
+    true;
+  `;
+
+  const handleMessage = (event: WebViewMessageEvent) => {
+    const message = event.nativeEvent.data;
+    if (message === 'PRINT_TRIGGERED') {
+      Alert.alert('Print Triggered', 'Print button clicked in WebView.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <WebView
-        source={{ uri: 'https://bluebellschool.org.in/site/login' }}
+        ref={webViewRef}
+        source={{ uri: 'https://esmsv2.scriptlab.in/site/login' }}
         style={styles.webview}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        injectedJavaScript={injectedJS}
+        onMessage={handleMessage}
+        setSupportMultipleWindows={true}
+        onShouldStartLoadWithRequest={(request) => {
+          const url = request.url.toLowerCase();
+          const isDownload =
+            url.includes('.pdf') ||
+            url.includes('.doc') ||
+            url.includes('.xls') ||
+            url.includes('download');
+
+          if (isDownload) {
+            Linking.openURL(request.url);
+            return false;
+          }
+          return true;
+        }}
+        onFileDownload={({ nativeEvent }) => {
+          const { downloadUrl } = nativeEvent;
+          Linking.openURL(downloadUrl);
+        }}
       />
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default App
+export default App;
 
 const styles = StyleSheet.create({
   container: {
@@ -50,7 +95,8 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
   },
-})
+});
+
 
 
 
