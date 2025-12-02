@@ -55,7 +55,7 @@ const App = () => {
     <SafeAreaView style={styles.container}>
       <WebView
         ref={webViewRef}
-        source={{ uri: 'https://sga.esms.live/site/login' }}
+        source={{ uri: 'https://mschool.esms.live/site/login' }}
         style={styles.webview}
         javaScriptEnabled={true}
         domStorageEnabled={true}
@@ -109,3 +109,4 @@ const styles = StyleSheet.create({
 // source={{ uri: 'https://aip.esms.live/site/login' }}
 // source={{uri: 'https://lkids.esms.live/site/login'}}
 // source={{ uri: 'https://sga.esms.live/site/login' }}
+// source={{ uri: 'https://mschool.esms.live/site/login' }}
