@@ -12,7 +12,6 @@
   "dependencies": {
     "react": "19.0.0",
     "react-native": "0.79.2",
-    "react-native-vector-icons": "^10.2.0",
     "react-native-webview": "^13.15.0"
   },
   "devDependencies": {
